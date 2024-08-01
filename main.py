@@ -87,9 +87,11 @@ if uploaded_file is not None:
         chain_type="map_reduce"
     )
 
-    # Preparar los prompts en español
-    prompts = [f"Por favor, resume el siguiente texto en español:\n\n{doc.page_content}" for doc in splitted_documents]
+    # Preparar los documentos para el resumen
+    documents = [{"page_content": doc.page_content} for doc in splitted_documents]
 
-    summary_output = summarize_chain.run(prompts)
-
-    st.write(summary_output)
+    try:
+        summary_output = summarize_chain.run(documents)
+        st.write(summary_output)
+    except Exception as e:
+        st.error(f"Error al ejecutar la cadena de resumen: {str(e)}")
