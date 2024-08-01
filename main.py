@@ -90,13 +90,8 @@ if uploaded_file is not None:
     summarize_chain = load_summarize_chain(
         llm=llm, 
         chain_type="map_reduce"
-        )
+    )
 
-    def summarize_in_spanish(documents):
-        prompt = "Por favor, resume el siguiente texto en español:"
-        return llm.run(f"{prompt} {documents}")
-
-    # Ejecutar la función de resumen
-    summary_output = summarize_in_spanish(splitted_documents)
+    summary_output = summarize_chain.run(splitted_documents)
 
     st.write(summary_output)
