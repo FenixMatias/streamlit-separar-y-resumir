@@ -87,11 +87,13 @@ if uploaded_file is not None:
         chain_type="map_reduce"
     )
 
-    # Preparar los documentos para el resumen
+    # Preparar los documentos en el formato adecuado para la cadena de resumen
+    # Suponiendo que `create_documents` devuelve listas de dicts, se utiliza el formato `text`
     documents = [{"text": doc} for doc in splitted_documents]
 
     try:
-        summary_output = summarize_chain.run(documents)
+        # Ejecutar la cadena de resumen con los documentos
+        summary_output = summarize_chain.run({"input_documents": documents})
         st.write(summary_output)
     except Exception as e:
         st.error(f"Error al ejecutar la cadena de resumen: {str(e)}")
