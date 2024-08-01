@@ -48,24 +48,31 @@ uploaded_file = st.file_uploader("Elija un archivo", type="txt")
 st.markdown("### Este es su resumen:")
 
 if uploaded_file is not None:
-    # Leer el archivo como bytes
+    # Para leer el archivo como bytes:
     bytes_data = uploaded_file.getvalue()
-    
-    # Convertir a una cadena basada en IO
+    #st.write(bytes_data)
+
+    # Para convertir a una cadena basada en IO:
     stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-    
-    # Leer el archivo como cadena
+    #st.write(stringio)
+
+    # Para leer el archivo como cadena:
     string_data = stringio.read()
-    
+    #st.write(string_data)
+
+    # Puede utilizarse siempre que se acepte un objeto «similar a un archivo»:
+    #dataframe = pd.read_csv(uploaded_file)
+    #st.write(dataframe)
+
     file_input = string_data
 
     if len(file_input.split(" ")) > 20000:
-        st.write("Por favor, introduce un archivo más corto. La longitud máxima es de 20000 palabras.")
+        st.write("Por favor, introduzca un archivo más corto. La longitud máxima es de 20000 palabras.")
         st.stop()
 
     if file_input:
         if not openai_api_key:
-            st.warning('Introduce la clave API de OpenAI. \
+            st.warning('Introduzca la clave API de OpenAI. \
             Instrucciones [aquí](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key)', 
             icon="⚠️")
             st.stop()
@@ -74,26 +81,17 @@ if uploaded_file is not None:
         separators=["\n\n", "\n"], 
         chunk_size=5000, 
         chunk_overlap=350
-    )
+        )
 
     splitted_documents = text_splitter.create_documents([file_input])
 
-    # Inicializar el modelo de lenguaje con la clave API
-    llm = OpenAI(api_key=openai_api_key)
+    llm = load_LLM(openai_api_key=openai_api_key)
 
-    # Cargar la cadena de resumen
     summarize_chain = load_summarize_chain(
         llm=llm, 
         chain_type="map_reduce"
-    )
+        )
 
-    # Preparar los documentos en el formato adecuado para la cadena de resumen
-    # Suponiendo que `create_documents` devuelve listas de dicts, se utiliza el formato `text`
-    documents = [{"text": doc} for doc in splitted_documents]
+    summary_output = summarize_chain.run(splitted_documents)
 
-    try:
-        # Ejecutar la cadena de resumen con los documentos
-        summary_output = summarize_chain.run({"input_documents": documents})
-        st.write(summary_output)
-    except Exception as e:
-        st.error(f"Error al ejecutar la cadena de resumen: {str(e)}")
+    st.write(summary_output)
