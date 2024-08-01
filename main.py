@@ -84,12 +84,11 @@ if uploaded_file is not None:
     # Cargar la cadena de resumen
     summarize_chain = load_summarize_chain(
         llm=llm, 
-        chain_type="map_reduce",
-        llm_kwargs={"language": "es"}  # Especificar el idioma español en los parámetros del modelo
+        chain_type="map_reduce"
     )
 
-    # Preparar el prompt en español
-    prompts = [f"Por favor, resume el siguiente texto en español:\n\n{doc}" for doc in splitted_documents]
+    # Preparar los prompts en español
+    prompts = [f"Por favor, resume el siguiente texto en español:\n\n{doc.page_content}" for doc in splitted_documents]
 
     summary_output = summarize_chain.run(prompts)
 
