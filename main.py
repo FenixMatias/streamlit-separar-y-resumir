@@ -5,6 +5,8 @@ from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import pandas as pd
 from io import StringIO
+from langchain_community.document_transformers import DoctranTextTranslator
+from langchain_core.documents import Document
 
 #LLM y función de carga de llaves
 def load_LLM(openai_api_key):
@@ -94,4 +96,8 @@ if uploaded_file is not None:
 
     summary_output = summarize_chain.run(splitted_documents)
 
-    st.write(summary_output)
+    documents = [Document(page_content=summary_output)]
+    qa_translator = DoctranTextTranslator(language="spanish")
+    translated_document = qa_translator.transform_documents(documents)
+
+    st.write(translated_document)
