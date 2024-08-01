@@ -1,5 +1,5 @@
 import streamlit as st
-from langchain import PromptTemplate
+from langchain import PromptTemplate, LLMChain
 from langchain_openai import OpenAI
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -87,10 +87,10 @@ if uploaded_file is not None:
 
     llm = load_LLM(openai_api_key=openai_api_key)
 
-    summarize_chain = load_summarize_chain(
-        llm=llm, 
-        chain_type="map_reduce"
-        )
+    prompt_template = PromptTemplate(input_variables=["text"], template="Resume el siguiente texto en español: {text}")
+    llm_chain = LLMChain(llm=llm, prompt=prompt_template)
+
+    summarize_chain = load_summarize_chain(llm=llm_chain, chain_type="map_reduce")
 
     summary_output = summarize_chain.run(splitted_documents)
 
