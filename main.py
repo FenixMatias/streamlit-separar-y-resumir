@@ -1,95 +1,58 @@
 import streamlit as st
-from langchain import PromptTemplate, LLMChain
-from langchain_openai import OpenAI
-from langchain.chains.summarize import load_summarize_chain
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-import pandas as pd
 from io import StringIO
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains import load_summarize_chain
+from langchain_openai import OpenAI
 
-# LLM y función de carga de llaves
-def load_LLM(openai_api_key):
-    # Asegúrese de que su openai_api_key se establece como una variable de entorno
-    llm = OpenAI(temperature=0, openai_api_key=openai_api_key)
-    return llm
+# Asegúrate de tener tu clave API de OpenAI
+openai_api_key = st.text_input("Introduce tu clave API de OpenAI", type="password")
 
-
-# Título y cabecera de la página
-st.set_page_config(page_title="Resumidor de textos largos AI")
-st.header("Resumidor de Textos Largos AI")
-
-
-# Intro: instrucciones
-col1, col2 = st.columns(2)
-
-with col1:
-    st.markdown("ChatGPT no puede resumir textos largos. Ahora puedes hacerlo con esta aplicación.")
-
-with col2:
-    st.write("Contacte con [Matias Toro Labra](https://www.linkedin.com/in/luis-matias-toro-labra-b4074121b/) para construir sus proyectos de IA")
-
-
-# Introducir la clave API de OpenAI
-st.markdown("## Introduzca su clave API de OpenAI")
-
-def get_openai_api_key():
-    input_text = st.text_input(label="OpenAI API Key ",  placeholder="Ex: sk-2twmA8tfCb8un4...", key="openai_api_key_input", type="password")
-    return input_text
-
-openai_api_key = get_openai_api_key()
-
-
-# Entrada
-st.markdown("## Cargue el archivo de texto que desea resumir")
-
-uploaded_file = st.file_uploader("Elija un archivo", type="txt")
-
-
-# Salida
-st.markdown("### Este es su resumen:")
+uploaded_file = st.file_uploader("Sube tu archivo")
 
 if uploaded_file is not None:
-    # Para leer el archivo como bytes:
+    # Leer el archivo como bytes
     bytes_data = uploaded_file.getvalue()
-
-    # Para convertir a una cadena basada en IO:
+    
+    # Convertir a una cadena basada en IO
     stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-
-    # Para leer el archivo como cadena:
+    
+    # Leer el archivo como cadena
     string_data = stringio.read()
-
+    
     file_input = string_data
 
     if len(file_input.split(" ")) > 20000:
-        st.write("Por favor, introduzca un archivo más corto. La longitud máxima es de 20000 palabras.")
+        st.write("Por favor, introduce un archivo más corto. La longitud máxima es de 20000 palabras.")
         st.stop()
 
     if file_input:
         if not openai_api_key:
-            st.warning('Introduzca la clave API de OpenAI. \
+            st.warning('Introduce la clave API de OpenAI. \
             Instrucciones [aquí](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key)', 
             icon="⚠️")
             st.stop()
 
-        text_splitter = RecursiveCharacterTextSplitter(
-            separators=["\n\n", "\n"], 
-            chunk_size=5000, 
-            chunk_overlap=350
-        )
+    text_splitter = RecursiveCharacterTextSplitter(
+        separators=["\n\n", "\n"], 
+        chunk_size=5000, 
+        chunk_overlap=350
+    )
 
-        splitted_documents = text_splitter.create_documents([file_input])
+    splitted_documents = text_splitter.create_documents([file_input])
 
-        llm = load_LLM(openai_api_key=openai_api_key)
+    # Inicializar el modelo de lenguaje con la clave API
+    llm = OpenAI(api_key=openai_api_key)
 
-        summaries = []
-        for doc in splitted_documents:
-            try:
-                prompt_template = PromptTemplate(input_variables=["text"], template="Resume el siguiente texto en español: {text}")
-                llm_chain = LLMChain(llm=llm, prompt=prompt_template)
-                summary_output = llm_chain.run({"text": doc.page_content})
-                summaries.append(summary_output)
-            except Exception as e:
-                st.error(f"Error procesando un fragmento del documento: {e}")
-                continue
+    # Cargar la cadena de resumen
+    summarize_chain = load_summarize_chain(
+        llm=llm, 
+        chain_type="map_reduce",
+        llm_kwargs={"language": "es"}  # Especificar el idioma español en los parámetros del modelo
+    )
 
-        full_summary = " ".join(summaries)
-        st.write(full_summary)
+    # Preparar el prompt en español
+    prompt = "Por favor, resume el siguiente texto en español:\n\n" + file_input
+
+    summary_output = summarize_chain.run([prompt])
+
+    st.write(summary_output)
