@@ -9,7 +9,7 @@ from io import StringIO
 #LLM y función de carga de llaves
 def load_LLM(openai_api_key):
     # Asegúrese de que su openai_api_key se establece como una variable de entorno
-    llm = OpenAI(temperature=0, openai_api_key=openai_api_key, language="es")
+    llm = OpenAI(temperature=0, openai_api_key=openai_api_key)
     return llm
 
 
@@ -85,13 +85,18 @@ if uploaded_file is not None:
 
     splitted_documents = text_splitter.create_documents([file_input])
 
-    llm = load_LLM(openai_api_key=openai_api_key, language="es")
+    llm = load_LLM(openai_api_key=openai_api_key)
 
     summarize_chain = load_summarize_chain(
         llm=llm, 
         chain_type="map_reduce"
         )
 
-    summary_output = summarize_chain.run(splitted_documents)
+    def summarize_in_spanish(documents):
+        prompt = "Por favor, resume el siguiente texto en español:"
+        return llm.run(f"{prompt} {documents}")
+
+    # Ejecutar la función de resumen
+    summary_output = summarize_in_spanish(splitted_documents)
 
     st.write(summary_output)
