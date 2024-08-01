@@ -89,8 +89,8 @@ if uploaded_file is not None:
     )
 
     # Preparar el prompt en español
-    prompt = "Por favor, resume el siguiente texto en español:\n\n" + file_input
+    prompts = [f"Por favor, resume el siguiente texto en español:\n\n{doc}" for doc in splitted_documents]
 
-    summary_output = summarize_chain.run([prompt])
+    summary_output = summarize_chain.run(prompts)
 
     st.write(summary_output)
