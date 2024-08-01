@@ -88,7 +88,7 @@ if uploaded_file is not None:
     )
 
     # Preparar los documentos para el resumen
-    documents = [{"page_content": doc.page_content} for doc in splitted_documents]
+    documents = [{"text": doc} for doc in splitted_documents]
 
     try:
         summary_output = summarize_chain.run(documents)
