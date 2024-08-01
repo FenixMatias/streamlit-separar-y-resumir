@@ -91,7 +91,7 @@ if uploaded_file is not None:
         llm=llm, 
         chain_type="map_reduce",
         language="es"
-        )
+    )
 
     summary_output = summarize_chain.run(splitted_documents)
 
