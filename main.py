@@ -93,6 +93,8 @@ if uploaded_file is not None:
         llm_kwargs={"language": "es"}
     )
 
-    summary_output = summarize_chain.run(splitted_documents)
+    prompt = "Por favor, resume el siguiente texto en español:\n\n" + file_input
+
+    summary_output = summarize_chain.run([prompt])
 
     st.write(summary_output)
